@@ -61,10 +61,14 @@ class BacktestReport(BaseReport):
     average_profit_trade = None
     average_loss_trade = None
     modeling_quality_percentage = None
+    max_consecutive_profit_count = None
     max_consecutive_profit = None
+    max_consecutive_loss_count = None
     max_consecutive_loss = None
-    max_consecutive_wins = None
-    max_consecutive_losses = None
+    max_consecutive_wins_count = None
+    max_consecutive_wins_profit = None
+    max_consecutive_losses_count = None
+    max_consecutive_losses_loss = None
     profit_trades = None
     profit_trades_rate = None
     loss_trades = None
@@ -92,6 +96,9 @@ class BacktestReport(BaseReport):
         for index, td in enumerate(tds):
             if td.text == 'Initial deposit':
                 self.initial_deposit = float(tds[index+1].text)
+            if td.text == 'Modelling quality':
+                modeling_quality_percentage_str = re.sub('%', '', tds[index+1].text)
+                self.modeling_quality_percentage = float(modeling_quality_percentage_str)
             elif td.text == 'Total net profit':
                 self.profit = float(tds[index+1].text)
             elif td.text == 'Gross profit':
@@ -114,27 +121,56 @@ class BacktestReport(BaseReport):
                 self.relative_drawdown = data
             elif td.text == 'Total trades':
                 self.total_trades = int(tds[index+1].text)
-            elif td.text == 'Short positions':
+            elif td.text == 'Short positions (won %)':
                 data, rate = self.get_data_and_rate(tds[index+1].text)
                 self.short_positions_rate = rate
                 self.short_positions = data
-            elif td.text == 'Long positions':
+            elif td.text == 'Long positions (won %)':
                 data, rate = self.get_data_and_rate(tds[index+1].text)
                 self.long_positions_rate = rate
                 self.long_positions = data
-            elif td.text == 'Profit trades':
+            elif td.text == 'Profit trades (% of total)':
                 data, rate = self.get_data_and_rate(tds[index+1].text)
                 self.profit_trades_rate = rate
-                self.profit_trades = data
-            elif td.text == 'Loss trades':
+                self.profit_trades = int(data)
+                print self.profit_trades
+            elif td.text == 'Loss trades (% of total)':
                 data, rate = self.get_data_and_rate(tds[index+1].text)
                 self.loss_trades_rate = rate
-                self.loss_trades = data
+                self.loss_trades = int(data)
             elif td.text == 'Largest':
                 if tds[index+1].text == 'profit trade':
-                    print tds[index+2].text
+                    self.largest_profit_trade = float(tds[index+2].text)
                 if tds[index+3].text == 'loss trade':
-                    print tds[index+4].text                
+                    self.largest_loss_trade = float(tds[index+4].text)
+            elif td.text == 'Average':
+                if tds[index+1].text == 'profit trade':
+                    self.average_profit_trade = float(tds[index+2].text)
+                elif tds[index+1].text == 'consecutive wins':
+                    self.ave_consecutive_wins = int(tds[index+2].text)
+                if tds[index+3].text == 'loss trade':
+                    self.average_loss_trade = float(tds[index+4].text)
+                elif tds[index+3].text == 'consecutive losses':
+                    self.ave_consecutive_losses = int(tds[index+4].text)
+            elif td.text == 'Maximum':
+                if tds[index+1].text == 'consecutive wins (profit in money)':
+                    token = self.split_to_tokens(tds[index+2].text)
+                    self.max_consecutive_wins_count = int(token[0])
+                    self.max_consecutive_wins_profit = float(token[1])
+                if tds[index+3].text == 'consecutive losses (loss in money)':
+                    token = self.split_to_tokens(tds[index+4].text)
+                    self.max_consecutive_losses_count = int(token[0])
+                    self.max_consecutive_losses_loss = float(token[1])
+            elif td.text == 'Maximal':
+                if tds[index+1].text == 'consecutive profit (count of wins)':
+                    token = self.split_to_tokens(tds[index+2].text)
+                    self.max_consecutive_profit = float(token[0])
+                    self.max_consecutive_profit_count = int(token[1])
+                if tds[index+3].text == 'consecutive loss (count of losses)':
+                    token = self.split_to_tokens(tds[index+4].text)
+                    self.max_consecutive_loss = float(token[0])
+                    self.max_consecutive_loss_count = int(token[1])
+
 
     def get_data_and_rate(self, line):
         import re
@@ -152,6 +188,24 @@ class BacktestReport(BaseReport):
             else:
                 data = float(value)            
         return data, rate
+    
+    def split_to_tokens(self, line):
+        '''
+        Notes:
+          split consecutive xxx into two tokens.
+          e.g. 1 (123.45) => (1, 123.45)
+               123.45 (1) => (123.45, 1)
+        '''
+        import re
+        from exception import InvalidReportFormat
+
+        formatted_str = re.sub('(\(|\))', '', line)
+        values = formatted_str.split(r' ')
+
+        if len(values) != 2:
+            raise InvalidReportFormat('value of Maximal drawdown contains more than 2 values')
+        
+        return values
 
 class ShortReport(BaseReport):
     """
