@@ -8,6 +8,7 @@ import logging
 import os
 from mt4 import get_mt4
 from mt4 import DEFAULT_MT4_NAME
+from __builtin__ import str
 
 class BackTest(object):
     """
@@ -117,11 +118,15 @@ class BackTest(object):
                         fp.write('%s,2=0\n' % k)
                         fp.write('%s,3=0\n' % k)
                 else:
-                    # write unused dummy data for same format.
-                    fp.write('%s,F=0\n' % k)
-                    fp.write('%s,1=0\n' % k)
-                    fp.write('%s,2=0\n' % k)
-                    fp.write('%s,3=0\n' % k)
+                    if type(value) == str:
+                        # this ea arg is string. then don't write F,1,2,3 section in config
+                        pass
+                    else:
+                        # write unused dummy data for same format.
+                        fp.write('%s,F=0\n' % k)
+                        fp.write('%s,1=0\n' % k)
+                        fp.write('%s,2=0\n' % k)
+                        fp.write('%s,3=0\n' % k)
 
 
     def _get_conf_abs_path(self, alias=DEFAULT_MT4_NAME):
