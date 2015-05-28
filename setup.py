@@ -6,12 +6,16 @@ Created on 2015/02/20
 '''
 version = '0.0.1'
 
+def readme():
+    with open("README.rst") as f:
+        return f.read()
+
 from distutils.core import setup
 
 setup(name='metatrader',
-      version=version,
+      version = version,
       description="MetaTrader4 Libraries easily backtest and optimization from python",
-#       long_description=open('README.rst').read() + '\n\n' + open('CHANGES.rst').read(),
+      long_description = readme(),
       classifiers=[
           'Environment :: Web Environment',
           'Intended Audience :: Developers',
@@ -25,15 +29,13 @@ setup(name='metatrader',
       keywords='MetaTrader mt4 mql',
       author='samuraitaiga',
       author_email='samuraitaiga@gmail.com',
-#       url='http://urllib3.readthedocs.org/',
+      url='https://github.com/samuraitaiga/py-metatrader',
       license='MIT',
       packages=['metatrader',
                 ],
       install_requires=['beautifulsoup4'],
-#       tests_require=[
-          # These are a less-specific subset of dev-requirements.txt, for the
-          # convenience of distro package maintainers.
-#           'nose',
-#       ],
-#       test_suite='test',
+      tests_require=[
+        'nose',
+      ],
+       test_suite='test',
       )

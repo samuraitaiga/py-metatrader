@@ -1,13 +1,14 @@
-####
+****************************************
 py-metatrader
-####
+****************************************
+
 py-metatrader 0.0.1
 
 Released: 30-May-2015
 
-************
+=============
 Introduction
-************
+=============
 
 py-metatrader is a python package that provides interfaces to metatrader4(mt4).
 `metatrader4`_  is a trading platform that can automate trading(fx, stock, etc...) by your own program(ExpertAdvisor in mt4).
@@ -18,49 +19,50 @@ currently works with Python 2.7.
 
 contributing and porting is welcome.
 
-********
-feature
-********
+
+=============
+Feature
+=============
 
 At the moment, py-metatrader supports:
 
-* Backtest
-
-  * backtest
-  * optimization
-
+* backtest
+* optimization
 
 The goal of py-metatrader is to support execute all feature of metatrader4 from this library.
 
 
-************
+============
 Installation
-************
+============
 
 Install via `pip`_:
 
-::
+.. code-block:: bash
 
     $ pip install metatrader
 
 Install from source:
 
-::
+.. code-block:: bash
 
     $ git clone https://github.com/samuraitaiga/py-metatrader.git
     $ cd py-metatrader
     $ python setup.py install
 
-**********
+
+============
 ChangeLogs
-**********
+============
 * 0.0.1
 
   * first release. backtest and optimization from python.
 
-**********
+
+============
 Usage
-**********
+============
+
 
 Backtest:
 
