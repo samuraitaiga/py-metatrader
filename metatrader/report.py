@@ -133,7 +133,6 @@ class BacktestReport(BaseReport):
                 data, rate = self.get_data_and_rate(tds[index+1].text)
                 self.profit_trades_rate = rate
                 self.profit_trades = int(data)
-                print self.profit_trades
             elif td.text == 'Loss trades (% of total)':
                 data, rate = self.get_data_and_rate(tds[index+1].text)
                 self.loss_trades_rate = rate
