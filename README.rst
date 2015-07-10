@@ -91,6 +91,9 @@ Backtest:
     # create backtest object
     backtest = BackTest(ea_name, param, 'USDJPY', 'M5', from_date, to_date)
 
+    # create backtest object with specified spread
+    # backtest = BackTest(ea_name, param, 'USDJPY', 'M5', from_date, to_date, spread=10)
+
     # run backtest
     ret = backtest.run()
 
