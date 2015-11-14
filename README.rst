@@ -3,8 +3,8 @@ py-metatrader
 ****************************************
 
 .. image:: https://badges.gitter.im/Join%20Chat.svg
-   :alt: Join the chat at https://gitter.im/swdtalent/py-metatrader
-   :target: https://gitter.im/swdtalent/py-metatrader?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+   :alt: Join the chat at hhttps://gitter.im/samuraitaiga/py-metatrader
+   :target: https://gitter.im/samuraitaiga/py-metatrader
 
 py-metatrader 0.0.1
 
