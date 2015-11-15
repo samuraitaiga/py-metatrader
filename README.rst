@@ -2,6 +2,10 @@
 py-metatrader
 ****************************************
 
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at hhttps://gitter.im/samuraitaiga/py-metatrader
+   :target: https://gitter.im/samuraitaiga/py-metatrader
+
 py-metatrader 0.0.1
 
 Released: 30-May-2015
