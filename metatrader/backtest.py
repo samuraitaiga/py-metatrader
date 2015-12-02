@@ -4,11 +4,13 @@ Created on 2015/01/25
 
 @author: samuraitaiga
 '''
-import logging
+from __future__ import absolute_import, division
 import os
-from mt4 import get_mt4
-from mt4 import DEFAULT_MT4_NAME
-from __builtin__ import str
+from metatrader.mt4 import get_mt4
+from metatrader.mt4 import DEFAULT_MT4_NAME
+from metatrader.report import BacktestReport
+from metatrader.report import OptimizationReport
+
 
 class BackTest(object):
     """
@@ -18,7 +20,7 @@ class BackTest(object):
       symbol(string): currency symbol. e.g.: USDJPY
       from_date(datetime.datetime): backtest from date
       to_date(datetime.datetime): backtest to date
-      model(int): backtest model 
+      model(int): backtest model
         0: Every tick
         1: Control points
         2: Open prices only
@@ -27,6 +29,7 @@ class BackTest(object):
       replace_report(bool): replace report flag. replace report is enabled if True
 
     """
+
     def __init__(self, ea_name, param, symbol, period, from_date, to_date, model=0, spread=5, replace_repot=True):
         self.ea_name = ea_name
         self.param = param
@@ -51,8 +54,8 @@ class BackTest(object):
         Notes:
           create config file(.conf) which is used parameter of terminal.exe
           in %APPDATA%\\MetaQuotes\\Terminal\\<UUID>\\tester
-          
-          file contents goes to 
+
+          file contents goes to
             TestExpert=SampleEA
             TestExpertParameters=SampleEA.set
             TestSymbol=USDJPY
@@ -79,8 +82,8 @@ class BackTest(object):
             fp.write('TestExpert=%s\n' % self.ea_name)
             fp.write('TestExpertParameters=%s.set\n' % self.ea_name)
             fp.write('TestSymbol=%s\n' % self.symbol)
-            fp.write('TestModel=%s\n' % self.model)
             fp.write('TestPeriod=%s\n' % self.period)
+            fp.write('TestModel=%s\n' % self.model)
             fp.write('TestSpread=%s\n' % self.spread)
             fp.write('TestOptimization=%s\n' % str(self.optimization).lower())
             fp.write('TestDateEnable=true\n')
@@ -110,9 +113,9 @@ class BackTest(object):
                         fp.write('%s,F=1\n' % k)
                         fp.write('%s,1=%s\n' % (k, value))
                         interval = values.pop('interval')
-                        fp.write('%s,2=%s\n' % (k,interval))
+                        fp.write('%s,2=%s\n' % (k, interval))
                         maximum = values.pop('max')
-                        fp.write('%s,3=%s\n' % (k,maximum))
+                        fp.write('%s,3=%s\n' % (k, maximum))
                     else:
                         # if this value won't be optimized, write unused dummy data for same format.
                         fp.write('%s,F=0\n' % k)
@@ -130,7 +133,6 @@ class BackTest(object):
                         fp.write('%s,2=0\n' % k)
                         fp.write('%s,3=0\n' % k)
 
-
     def _get_conf_abs_path(self, alias=DEFAULT_MT4_NAME):
         mt4 = get_mt4(alias=alias)
         conf_file = os.path.join(mt4.appdata_path, 'tester', '%s.conf' % self.ea_name)
@@ -141,31 +143,28 @@ class BackTest(object):
         Notes:
           run backtest
         """
-        from report import BacktestReport
 
         self.optimization = False
 
         self._prepare(alias=alias)
         bt_conf = self._get_conf_abs_path(alias=alias)
-    
+
         mt4 = get_mt4(alias=alias)
         mt4.run(self.ea_name, conf=bt_conf)
-    
+
         ret = BacktestReport(self)
         return ret
 
     def optimize(self, alias=DEFAULT_MT4_NAME):
         """
         """
-        from report import OptimizationReport
-
         self.optimization = True
         self._prepare(alias=alias)
         bt_conf = self._get_conf_abs_path(alias=alias)
-    
+
         mt4 = get_mt4(alias=alias)
         mt4.run(self.ea_name, conf=bt_conf)
-        
+
         ret = OptimizationReport(self)
         return ret
 

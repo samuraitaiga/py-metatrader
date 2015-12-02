@@ -4,12 +4,16 @@ Created on 2015/01/31
 @author: Taiga
 '''
 
-from mt4 import get_mt4
-from mt4 import DEFAULT_MT4_NAME
+from metatrader.mt4 import get_mt4
+from metatrader.mt4 import DEFAULT_MT4_NAME
 import logging
+import re
+from metatrader.exception import InvalidReportFormat
+
 
 def has_divtag_with_style(tag):
     return tag.name == 'div' and tag.has_attr('style')
+
 
 class BaseReport(object):
     """
@@ -21,12 +25,13 @@ class BaseReport(object):
       symbol(string): currency symbol. e.g.: USDJPY
       from_date(datetime.datetime): backtest from date
       to_date(datetime.datetime): backtest to date
-      model(int): backtest model 
+      model(int): backtest model
         0: Every tick
         1: Control points
         2: Open prices only
       spread(int): spread
     """
+
     def __init__(self, backtest):
         self.ea_name = backtest.ea_name
         self.param = backtest.param
@@ -35,6 +40,7 @@ class BaseReport(object):
         self.to_date = backtest.to_date
         self.model = backtest.model
         self.spread = backtest.spread
+
 
 class BacktestReport(BaseReport):
     """
@@ -88,106 +94,106 @@ class BacktestReport(BaseReport):
         report_file = get_report_abs_path(backtest.ea_name, alias=alias)
         with open(report_file, 'r') as fp:
             raw_html = fp.read()
-            
+
         b_soup = BeautifulSoup(raw_html)
         summary_in_table = b_soup.find_all('table')[0]
         tds = summary_in_table.find_all('td')
-        
+
         for index, td in enumerate(tds):
             if td.text == 'Initial deposit':
-                self.initial_deposit = float(tds[index+1].text)
+                self.initial_deposit = float(tds[index + 1].text)
             if td.text == 'Modelling quality':
-                modeling_quality_percentage_str = re.sub('%', '', tds[index+1].text)
+                modeling_quality_percentage_str = re.sub('%', '', tds[index + 1].text)
                 self.modeling_quality_percentage = float(modeling_quality_percentage_str)
             elif td.text == 'Total net profit':
-                self.profit = float(tds[index+1].text)
+                self.profit = float(tds[index + 1].text)
             elif td.text == 'Gross profit':
-                self.gross_profit = float(tds[index+1].text)
+                self.gross_profit = float(tds[index + 1].text)
             elif td.text == 'Gross loss':
-                self.gross_loss = float(tds[index+1].text)
+                self.gross_loss = float(tds[index + 1].text)
             elif td.text == 'Profit factor':
-                self.profit_factor = float(tds[index+1].text)
+                self.profit_factor = float(tds[index + 1].text)
             elif td.text == 'Expected payoff':
-                self.expected_payoff = float(tds[index+1].text)
+                self.expected_payoff = float(tds[index + 1].text)
             elif td.text == 'Absolute drawdown':
-                self.abs_drawdown = float(tds[index+1].text)
+                self.abs_drawdown = float(tds[index + 1].text)
             elif td.text == 'Maximal drawdown':
-                data, rate = self.get_data_and_rate(tds[index+1].text)
+                data, rate = self.get_data_and_rate(tds[index + 1].text)
                 self.max_drawdown_rate = rate
                 self.max_drawdown = data
             elif td.text == 'Relative drawdown':
-                data, rate = self.get_data_and_rate(tds[index+1].text)
+                data, rate = self.get_data_and_rate(tds[index + 1].text)
                 self.relative_drawdown_rate = rate
                 self.relative_drawdown = data
             elif td.text == 'Total trades':
-                self.total_trades = int(tds[index+1].text)
+                self.total_trades = int(tds[index + 1].text)
             elif td.text == 'Short positions (won %)':
-                data, rate = self.get_data_and_rate(tds[index+1].text)
+                data, rate = self.get_data_and_rate(tds[index + 1].text)
                 self.short_positions_rate = rate
                 self.short_positions = data
             elif td.text == 'Long positions (won %)':
-                data, rate = self.get_data_and_rate(tds[index+1].text)
+                data, rate = self.get_data_and_rate(tds[index + 1].text)
                 self.long_positions_rate = rate
                 self.long_positions = data
             elif td.text == 'Profit trades (% of total)':
-                data, rate = self.get_data_and_rate(tds[index+1].text)
+                data, rate = self.get_data_and_rate(tds[index + 1].text)
                 self.profit_trades_rate = rate
                 self.profit_trades = int(data)
             elif td.text == 'Loss trades (% of total)':
-                data, rate = self.get_data_and_rate(tds[index+1].text)
+                data, rate = self.get_data_and_rate(tds[index + 1].text)
                 self.loss_trades_rate = rate
                 self.loss_trades = int(data)
             elif td.text == 'Largest':
-                if tds[index+1].text == 'profit trade':
-                    self.largest_profit_trade = float(tds[index+2].text)
-                if tds[index+3].text == 'loss trade':
-                    self.largest_loss_trade = float(tds[index+4].text)
+                if tds[index + 1].text == 'profit trade':
+                    self.largest_profit_trade = float(tds[index + 2].text)
+                if tds[index + 3].text == 'loss trade':
+                    self.largest_loss_trade = float(tds[index + 4].text)
             elif td.text == 'Average':
-                if tds[index+1].text == 'profit trade':
-                    self.average_profit_trade = float(tds[index+2].text)
-                elif tds[index+1].text == 'consecutive wins':
-                    self.ave_consecutive_wins = int(tds[index+2].text)
-                if tds[index+3].text == 'loss trade':
-                    self.average_loss_trade = float(tds[index+4].text)
-                elif tds[index+3].text == 'consecutive losses':
-                    self.ave_consecutive_losses = int(tds[index+4].text)
+                if tds[index + 1].text == 'profit trade':
+                    self.average_profit_trade = float(tds[index + 2].text)
+                elif tds[index + 1].text == 'consecutive wins':
+                    self.ave_consecutive_wins = int(tds[index + 2].text)
+                if tds[index + 3].text == 'loss trade':
+                    self.average_loss_trade = float(tds[index + 4].text)
+                elif tds[index + 3].text == 'consecutive losses':
+                    self.ave_consecutive_losses = int(tds[index + 4].text)
             elif td.text == 'Maximum':
-                if tds[index+1].text == 'consecutive wins (profit in money)':
-                    token = self.split_to_tokens(tds[index+2].text)
+                if tds[index + 1].text == 'consecutive wins (profit in money)':
+                    token = self.split_to_tokens(tds[index + 2].text)
                     self.max_consecutive_wins_count = int(token[0])
                     self.max_consecutive_wins_profit = float(token[1])
-                if tds[index+3].text == 'consecutive losses (loss in money)':
-                    token = self.split_to_tokens(tds[index+4].text)
+                if tds[index + 3].text == 'consecutive losses (loss in money)':
+                    token = self.split_to_tokens(tds[index + 4].text)
                     self.max_consecutive_losses_count = int(token[0])
                     self.max_consecutive_losses_loss = float(token[1])
             elif td.text == 'Maximal':
-                if tds[index+1].text == 'consecutive profit (count of wins)':
-                    token = self.split_to_tokens(tds[index+2].text)
+                if tds[index + 1].text == 'consecutive profit (count of wins)':
+                    token = self.split_to_tokens(tds[index + 2].text)
                     self.max_consecutive_profit = float(token[0])
                     self.max_consecutive_profit_count = int(token[1])
-                if tds[index+3].text == 'consecutive loss (count of losses)':
-                    token = self.split_to_tokens(tds[index+4].text)
+                if tds[index + 3].text == 'consecutive loss (count of losses)':
+                    token = self.split_to_tokens(tds[index + 4].text)
                     self.max_consecutive_loss = float(token[0])
                     self.max_consecutive_loss_count = int(token[1])
 
-
     def get_data_and_rate(self, line):
-        import re
-        from exception import InvalidReportFormat
+
         formatted_str = re.sub('(\(|\))', '', line)
         values = formatted_str.split(r' ')
+        rate = 0.0
+        data = 0.0
 
         if len(values) != 2:
             raise InvalidReportFormat('value of Maximal drawdown contains more than 2 values')
-        
+
         for value in values:
-            if re.match('.*\%$',value):
-                rate = re.sub(r'%','',value)
+            if re.match('.*\%$', value):
+                rate = re.sub(r'%', '', value)
                 rate = float(rate)
             else:
-                data = float(value)            
+                data = float(value)
         return data, rate
-    
+
     def split_to_tokens(self, line):
         '''
         Notes:
@@ -195,16 +201,15 @@ class BacktestReport(BaseReport):
           e.g. 1 (123.45) => (1, 123.45)
                123.45 (1) => (123.45, 1)
         '''
-        import re
-        from exception import InvalidReportFormat
 
         formatted_str = re.sub('(\(|\))', '', line)
         values = formatted_str.split(r' ')
 
         if len(values) != 2:
             raise InvalidReportFormat('value of Maximal drawdown contains more than 2 values')
-        
+
         return values
+
 
 class ShortReport(BaseReport):
     """
@@ -221,12 +226,12 @@ class ShortReport(BaseReport):
       max_drawdown_rate(float): max drawdown rate of deposit
       initial_deposit(int): initial deposit of backtest of optimization
     """
-    
+
     def __init__(self, back_test, **kwargs):
         super(ShortReport, self).__init__(back_test)
         result = kwargs.copy()
 
-        self.param = result.pop('param')        
+        self.param = result.pop('param')
         self.profit = result.pop('profit')
         self.total_trades = result.pop('total_trades')
         self.profit_factor = result.pop('profit_factor')
@@ -235,13 +240,14 @@ class ShortReport(BaseReport):
         self.max_drawdown_rate = result.pop('max_drawdown_rate')
         self.initial_deposit = result.pop('initial_deposit')
 
+
 class OptimizationReport():
     """
     Note:
       this class has short reports
     """
     reports = []
-    
+
     def _is_valid_format(self, raw_html):
         from bs4 import BeautifulSoup
 
@@ -249,7 +255,7 @@ class OptimizationReport():
 
         b_soup = BeautifulSoup(raw_html)
         report_titles = b_soup.find_all(has_divtag_with_style)
-        
+
         for title in report_titles:
             if title.text == 'Optimization Report':
                 if self._get_initial_deposit(raw_html) != 0:
@@ -271,13 +277,13 @@ class OptimizationReport():
                 initial_deposit = float(tds[1].text)
 
         return initial_deposit
-    
+
     def _get_param_from_text(self, text):
         '''
         Note:
           create param dict from text in td title attribute in optimization report.
         Args:
-          text(string): 
+          text(string):
             e.g.: x=2; y=0.2; z=true;
         Returns:
           param(dict): ea param names and values.
@@ -291,11 +297,11 @@ class OptimizationReport():
             name_value = p.split(r'=')
             name = name_value[0]
             value = name_value[1]
-            
+
             param[name] = value
-            
+
         return param
-    
+
     def _get_results(self, backtest, raw_html):
         from bs4 import BeautifulSoup
         results = []
@@ -307,7 +313,7 @@ class OptimizationReport():
 
         # delete first tr, because it is category name
         trs.pop(0)
-        
+
         for tr in trs:
             tds = tr.find_all('td')
             param = None
@@ -317,7 +323,7 @@ class OptimizationReport():
             expected_payoff = None
             max_drawdown = None
             max_drawdown_rate = None
-            
+
             for i, td in enumerate(tds):
                 if i == 0:
                     param_raw_text = td.attrs.pop('title')
@@ -334,7 +340,7 @@ class OptimizationReport():
                     max_drawdown = float(td.text)
                 elif i == 6:
                     max_drawdown_rate = float(td.text)
-            
+
             short_report = ShortReport(backtest,
                                        param=param,
                                        profit=profit,
@@ -348,8 +354,7 @@ class OptimizationReport():
         return results
 
     def __init__(self, backtest, alias=DEFAULT_MT4_NAME):
-        from exception import InvalidReportFormat
-        
+
         report_file = get_report_abs_path(backtest.ea_name, alias=alias)
 
         with open(report_file, 'r') as fp:
@@ -357,14 +362,15 @@ class OptimizationReport():
 
         if self._is_valid_format(raw_html):
             try:
-                self.results = self._get_results(backtest, raw_html)                
+                self.results = self._get_results(backtest, raw_html)
             except KeyError:
                 err_msg = 'optimization report seems invlid format'
                 logging.error(err_msg)
                 raise
         else:
             raise InvalidReportFormat(report_file, r'"Optimization Report" not found in html')
-        
+
+
 def get_report_abs_path(ea_name, alias=DEFAULT_MT4_NAME):
     import os
     mt4 = get_mt4(alias=alias)

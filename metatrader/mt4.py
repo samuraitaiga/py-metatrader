@@ -4,20 +4,28 @@
 """
 import os
 import logging
+import subprocess
+
+try:
+    import winreg
+except:
+    import _winreg as winreg
+import codecs
 
 _mt4s = {}
 
 DEFAULT_MT4_NAME = 'default'
-# mt4 program file path is written in origin.txt 
+# mt4 program file path is written in origin.txt
 ORIGIN_TXT = 'origin.txt'
 MT4_EXE = 'terminal.exe'
+
 
 class MT4(object):
     """
     Notes:
       meta trader4 class which can lunch metatrader4.
       this class will only lunch metatrader4,
-      because metatrader4 can lunch either normal mode or backtest mode. 
+      because metatrader4 can lunch either normal mode or backtest mode.
     """
     prog_path = None
     appdata_path = None
@@ -45,11 +53,10 @@ class MT4(object):
         Notes:
           run terminal.exe.
         Args:
-          conf(string): abs path of conf file. 
-            details see mt4 help doc Client Terminal/Tools/Configuration at Startup 
+          conf(string): abs path of conf file.
+            details see mt4 help doc Client Terminal/Tools/Configuration at Startup
         """
-        import subprocess
-        
+
         if conf:
             prog = '"%s"' % os.path.join(self.prog_path, MT4_EXE)
             conf = '"%s"' % conf
@@ -91,6 +98,7 @@ def has_mt4_subdirs(appdata_path):
 
     return ret
 
+
 def is_uac_enabled():
     """
     Note:
@@ -98,16 +106,17 @@ def is_uac_enabled():
     Returns:
      True if uac is enabled, False if uac is disabled.
     """
-    import _winreg    
-    
-    reg_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', 0, _winreg.KEY_READ)
-    value, regtype = _winreg.QueryValueEx(reg_key, 'EnableLUA')
-    
+
+    reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System', 0,
+                             winreg.KEY_READ)
+    value, regtype = winreg.QueryValueEx(reg_key, 'EnableLUA')
+
     if value == 1:
-        #reg value 1 means UAC is enabled
+        # reg value 1 means UAC is enabled
         return True
     else:
         return False
+
 
 def get_appdata_path(program_file_dir):
     """
@@ -128,7 +137,6 @@ def get_appdata_path(program_file_dir):
         if ORIGIN_TXT in files:
             origin_file = os.path.join(root, ORIGIN_TXT)
 
-            import codecs
             with codecs.open(origin_file, 'r', 'utf-16') as fp:
                 line = fp.read()
                 if line == program_file_dir:
@@ -145,18 +153,19 @@ def get_appdata_path(program_file_dir):
 
     return app_dir
 
+
 def initizalize(ntpath, alias=DEFAULT_MT4_NAME):
     """
     Notes:
       initialize mt4
     Args:
       ntpath(string): mt4 install folder path.
-        e.g.: C:\\Program Files (x86)\\MetaTrader 4 - Alpari Japan 
+        e.g.: C:\\Program Files (x86)\\MetaTrader 4 - Alpari Japan
       alias(string): mt4 object alias name. default value is DEFAULT_MT4_NAME
     """
     global _mt4s
     if alias not in _mt4s:
-        #store mt4 objecct with alias name
+        # store mt4 objecct with alias name
         _mt4s[alias] = MT4(ntpath, )
     else:
         logging.info('%s is already initialized' % alias)
